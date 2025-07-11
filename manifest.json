@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "Google Search Keyboard Navigator",
-    "version": "0.1",
-    "description": "Navigate Google search results with up/down arrows and Enter.",
+    "version": "0.1.0",
+    "description": "Navigate Google search results with up/down arrows and Enter key.",
     "permissions": [
         "activeTab",
         "scripting"
@@ -10,11 +10,20 @@
     "content_scripts": [
         {
             "matches": [
-                "https://www.google.com/search*"
+                "https://www.google.com/search*",
+                "https://www.google.*/search*"
             ],
             "js": [
                 "content.js"
-            ]
+            ],
+            "run_at": "document_end"
         }
-    ]
+    ],
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "author": "Akis Kiraleos",
+    "homepage_url": "https://github.com/kiraleos/google-keyboard-navigation"
 }
