@@ -1,33 +1,22 @@
 (() => {
-  const resultsContainerSelector = 'div#search';
-  const resultItemSelector = 'div.g';
-
+  const resultsSelector = 'div#search a > h3'; // h3 inside links of results
   let results = [];
   let currentIndex = -1;
 
-  // Add CSS for highlight
+  // CSS for highlight
   const style = document.createElement('style');
   style.textContent = `
     .keyboard-nav-highlight {
-      background-color: #d2e3fc !important;
-      border-radius: 6px;
+      border-radius: 4px;
       outline: 2px solid #4285f4 !important;
-      transition: background-color 0.3s ease;
     }
   `;
   document.head.appendChild(style);
 
   function updateResults() {
-    const container = document.querySelector(resultsContainerSelector);
-    if (!container) {
-      results = [];
-      return;
-    }
-    // Filter .g divs that contain an <h3> inside a link, to ensure these are main results
-    results = Array.from(container.querySelectorAll(resultItemSelector)).filter(g => {
-      const linkWithH3 = g.querySelector('a > h3');
-      return linkWithH3 && g.offsetParent !== null; // visible
-    });
+    results = Array.from(document.querySelectorAll(resultsSelector))
+      .map(h3 => h3.parentElement)
+      .filter(el => el.href); // filter out non-links just in case
   }
 
   function clearHighlight() {
@@ -58,36 +47,26 @@
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      if (currentIndex < results.length - 1) {
-        currentIndex++;
-        highlight(currentIndex);
-      }
-      // else do nothing to avoid wrapping
+      currentIndex = (currentIndex + 1) % results.length;
+      highlight(currentIndex);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      if (currentIndex > 0) {
-        currentIndex--;
-        highlight(currentIndex);
-      }
-      // else do nothing to avoid wrapping
+      currentIndex = (currentIndex - 1 + results.length) % results.length;
+      highlight(currentIndex);
     } else if (e.key === 'Enter') {
       if (currentIndex >= 0 && currentIndex < results.length) {
         e.preventDefault();
-        const el = results[currentIndex];
-        const link = el.querySelector('a[href]');
-        if (link) {
-          const url = link.href;
-          if (e.ctrlKey || e.metaKey) {
-            window.open(url, '_blank');
-          } else {
-            window.location.href = url;
-          }
+        const url = results[currentIndex].href;
+        if (e.ctrlKey || e.metaKey) {
+          window.open(url, '_blank');
+        } else {
+          window.location.href = url;
         }
       }
     }
   }
 
-  // Handle Google's dynamic content updates
+  // Handle Google's dynamic page loads (e.g. Instant Search)
   const observer = new MutationObserver(() => {
     updateResults();
     if (currentIndex >= results.length) {
